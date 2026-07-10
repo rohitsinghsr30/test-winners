@@ -1,0 +1,44 @@
+.profilePage{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:90vh;
+    background:#f5f7fb;
+}
+
+.profileCard{
+    width:420px;
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.profileCard h2{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.profileCard input{
+    width:100%;
+    padding:12px;
+    margin-bottom:15px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:15px;
+}
+
+.profileCard button{
+    width:100%;
+    padding:12px;
+    background:#0057ff;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+.profileCard button:hover{
+    background:#0045d4;
+}

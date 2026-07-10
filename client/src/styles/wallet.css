@@ -1,0 +1,54 @@
+.walletPage{
+    display:flex;
+    justify-content:center;
+    padding:40px;
+    background:#f5f7fb;
+    min-height:90vh;
+}
+
+.walletCard{
+    width:500px;
+    background:#fff;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 5px 20px rgba(0,0,0,.1);
+}
+
+.walletCard h2{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.walletCard h3{
+    margin:12px 0;
+}
+
+.walletCard input{
+    width:100%;
+    padding:12px;
+    margin:20px 0;
+    border:1px solid #ccc;
+    border-radius:8px;
+}
+
+.walletButtons{
+    display:flex;
+    gap:15px;
+}
+
+.walletButtons button{
+    flex:1;
+    padding:12px;
+    border:none;
+    background:#0057ff;
+    color:#fff;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.transaction{
+    display:flex;
+    justify-content:space-between;
+    padding:12px;
+    border-bottom:1px solid #ddd;
+}

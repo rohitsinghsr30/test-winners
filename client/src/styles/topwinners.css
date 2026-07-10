@@ -1,0 +1,60 @@
+.winnerSection{
+padding:80px 20px;
+background:white;
+text-align:center;
+}
+
+.winnerSection h2{
+font-size:40px;
+margin-bottom:50px;
+color:#003366;
+}
+
+.winnerGrid{
+max-width:1200px;
+margin:auto;
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:30px;
+}
+
+.winnerCard{
+background:#f8fbff;
+padding:35px;
+border-radius:20px;
+box-shadow:0 10px 20px rgba(0,0,0,.08);
+transition:.3s;
+}
+
+.winnerCard:hover{
+transform:translateY(-8px);
+}
+
+.avatar{
+font-size:60px;
+margin-bottom:20px;
+}
+
+.winnerCard h3{
+margin-bottom:10px;
+}
+
+.winnerCard p{
+color:#777;
+margin-bottom:20px;
+}
+
+.winnerCard h1{
+color:#004aad;
+font-size:34px;
+}
+
+@media(max-width:900px){
+
+.winnerGrid{
+
+grid-template-columns:1fr;
+
+}
+
+}
