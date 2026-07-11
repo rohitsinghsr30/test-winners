@@ -1,4 +1,4 @@
-const User = require("../models/User.js");
+const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -31,8 +31,7 @@ const registerUser = async (req, res) => {
 
     // Generate Referral Code
     const referralCode =
-      "TW" +
-      Math.random().toString(36).substring(2, 8).toUpperCase();
+      "TW" + Math.random().toString(36).substring(2, 8).toUpperCase();
 
     // Create User
     const user = await User.create({
@@ -44,7 +43,7 @@ const registerUser = async (req, res) => {
       referralCode,
     });
 
-    // Generate JWT Token
+    // Generate JWT
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET,
@@ -61,14 +60,12 @@ const registerUser = async (req, res) => {
     });
 
   } catch (error) {
-
     console.log(error);
 
     res.status(500).json({
       success: false,
       message: "Server Error",
     });
-
   }
 };
 
@@ -173,7 +170,7 @@ const updateProfile = async (req, res) => {
         profileImage,
       },
       {
-        returnDocument: "after",
+        new: true,
         runValidators: true,
       }
     ).select("-password");
@@ -202,8 +199,6 @@ const updateProfile = async (req, res) => {
 
   }
 };
-
-// ================= EXPORTS =================
 
 module.exports = {
   registerUser,
