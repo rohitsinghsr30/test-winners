@@ -1,13 +1,16 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import MainLayout from "./layouts/MainLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
+// Pages
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Test from "./pages/Test";
+import TestDetails from "./pages/TestDetails";
+import Exam from "./pages/Exam";
 import Wallet from "./pages/Wallet";
 import Profile from "./pages/Profile";
 import Result from "./pages/Result";
@@ -16,19 +19,15 @@ function App() {
   return (
     <Routes>
 
-      {/* Public Routes */}
+      {/* ================= PUBLIC ROUTES ================= */}
 
       <Route element={<MainLayout />}>
-
         <Route path="/" element={<Home />} />
-
         <Route path="/login" element={<Login />} />
-
         <Route path="/signup" element={<Signup />} />
-
       </Route>
 
-      {/* Protected Routes */}
+      {/* ================= PROTECTED ROUTES ================= */}
 
       <Route
         path="/dashboard"
@@ -44,6 +43,24 @@ function App() {
         element={
           <ProtectedRoute>
             <Test />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/test/:id"
+        element={
+          <ProtectedRoute>
+            <TestDetails />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/exam/:id"
+        element={
+          <ProtectedRoute>
+            <Exam />
           </ProtectedRoute>
         }
       />
@@ -74,6 +91,10 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* ================= 404 PAGE ================= */}
+
+      <Route path="*" element={<Navigate to="/" replace />} />
 
     </Routes>
   );
