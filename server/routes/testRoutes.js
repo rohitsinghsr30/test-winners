@@ -6,14 +6,16 @@ const authMiddleware = require("../middleware/authMiddleware");
 const {
   getAllTests,
   getSingleTest,
+  startTest,
+  submitTest,
 } = require("../controllers/testController");
-
-// ================= GET ALL TESTS =================
 
 router.get("/", authMiddleware, getAllTests);
 
-// ================= GET SINGLE TEST =================
-
 router.get("/:id", authMiddleware, getSingleTest);
+
+router.post("/:id/start", authMiddleware, startTest);
+
+router.post("/:id/submit", authMiddleware, submitTest);
 
 module.exports = router;
