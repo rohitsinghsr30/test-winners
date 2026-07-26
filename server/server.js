@@ -4,26 +4,33 @@ require("dotenv").config();
 
 const connectDB = require("./config/db");
 
-// Routes
+// ================= IMPORT ROUTES =================
+
 const authRoutes = require("./routes/authRoutes");
 const walletRoutes = require("./routes/walletRoutes");
+const testRoutes = require("./routes/testRoutes");
 
 const app = express();
 
-// Connect MongoDB
+// ================= CONNECT DATABASE =================
+
 connectDB();
 
-// Middleware
+// ================= MIDDLEWARE =================
+
 app.use(cors());
 app.use(express.json());
 
 // ================= API ROUTES =================
 
-// Authentication Routes
+// Authentication
 app.use("/api/auth", authRoutes);
 
-// Wallet Routes
+// Wallet
 app.use("/api/wallet", walletRoutes);
+
+// Tests
+app.use("/api/tests", testRoutes);
 
 // ================= HOME ROUTE =================
 
@@ -34,7 +41,7 @@ app.get("/", (req, res) => {
   });
 });
 
-// ================= TEST ROUTE =================
+// ================= HEALTH CHECK =================
 
 app.get("/api/test", (req, res) => {
   res.json({
@@ -48,8 +55,8 @@ app.get("/api/test", (req, res) => {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log("================================");
+  console.log("======================================");
   console.log("🚀 TEST WINNERS Backend Running");
-  console.log("🌐 PORT :", PORT);
-  console.log("================================");
+  console.log(`🌐 PORT : ${PORT}`);
+  console.log("======================================");
 });
