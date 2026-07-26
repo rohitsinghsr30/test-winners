@@ -14,11 +14,11 @@ const getAllTests = async (req, res) => {
       tests,
     });
   } catch (error) {
-    console.log(error);
+    console.error("GET ALL TESTS ERROR:", error);
 
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message,
     });
   }
 };
@@ -45,13 +45,16 @@ const getSingleTest = async (req, res) => {
       test,
       questions,
     });
+
   } catch (error) {
-    console.log(error);
+
+    console.error("GET SINGLE TEST ERROR:", error);
 
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message,
     });
+
   }
 };
 
@@ -59,6 +62,7 @@ const getSingleTest = async (req, res) => {
 
 const startTest = async (req, res) => {
   try {
+
     const test = await Test.findById(req.params.id);
 
     if (!test) {
@@ -74,28 +78,40 @@ const startTest = async (req, res) => {
       testId: test._id,
       startTime: new Date(),
     });
+
   } catch (error) {
-    console.log(error);
+
+    console.error("START TEST ERROR:", error);
 
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message,
     });
+
   }
 };
 
 // ================= SUBMIT TEST =================
 
 const submitTest = async (req, res) => {
+
+  console.log("========== SUBMIT API HIT ==========");
+
   try {
 
-    const { answers } = req.body;
+    console.log("User:", req.user);
+    console.log("Test:", req.params.id);
+    console.log("Body:", req.body);
+
+    const answers = req.body.answers || {};
 
     const questions = await Question.find({
       test: req.params.id,
     });
 
-    if (!questions.length) {
+    console.log("Questions Found:", questions.length);
+
+    if (questions.length === 0) {
       return res.status(404).json({
         success: false,
         message: "Questions not found",
@@ -107,70 +123,77 @@ const submitTest = async (req, res) => {
     let wrongAnswers = 0;
     let unanswered = 0;
 
-    questions.forEach((question) => {
+    for (const question of questions) {
 
-      const selected = answers[question._id];
+      const selected = answers[question._id.toString()];
 
       if (
         selected === undefined ||
         selected === null ||
         selected === ""
       ) {
+
         unanswered++;
-      }
 
-      else if (selected == question.correctAnswer) {
+      } else if (Number(selected) === question.correctAnswer) {
+
         correctAnswers++;
-        score += question.marks;
-      }
+        score += Number(question.marks || 1);
 
-      else {
+      } else {
+
         wrongAnswers++;
-        score -= question.negativeMarks;
+        score -= Number(question.negativeMarks || 0);
+
       }
 
-    });
+    }
+
+    console.log("Score:", score);
+
+    const userId = req.user.id || req.user._id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User ID not found in token",
+      });
+    }
+
+    console.log("Creating Result...");
 
     const result = await Result.create({
-
-      user: req.user.id,
-
+      user: userId,
       test: req.params.id,
-
       score,
-
       correctAnswers,
-
       wrongAnswers,
-
       unanswered,
-
     });
 
-    res.status(201).json({
+    console.log("Result Saved Successfully");
 
+    return res.status(201).json({
       success: true,
-
       message: "Test Submitted Successfully",
-
       result,
-
     });
 
   } catch (error) {
 
-    console.log(error);
+    console.error("========== SUBMIT ERROR ==========");
+    console.error(error);
+    console.error(error.stack);
 
-    res.status(500).json({
-
+    return res.status(500).json({
       success: false,
-
-      message: "Server Error",
-
+      message: error.message,
     });
 
   }
+
 };
+
 // ================= EXPORT =================
 
 module.exports = {
