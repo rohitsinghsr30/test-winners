@@ -8,34 +8,50 @@ const transactionSchema = new mongoose.Schema(
       required: true,
     },
 
+    amount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
     type: {
       type: String,
       enum: [
-        "deposit",
-        "withdraw",
-        "entry_fee",
-        "winning",
+        "Deposit",
+        "Entry Fee",
+        "Prize",
+        "Withdraw",
+        "Refund",
+        "Referral Bonus",
       ],
-      required: true,
-    },
-
-    amount: {
-      type: Number,
       required: true,
     },
 
     status: {
       type: String,
-      enum: [
-        "pending",
-        "success",
-        "failed",
-      ],
-      default: "success",
+      enum: ["Pending", "Success", "Failed", "Cancelled"],
+      default: "Pending",
+    },
+
+    referenceId: {
+      type: String,
+      default: "",
+    },
+
+    test: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Test",
+      default: null,
     },
 
     description: {
       type: String,
+      default: "",
+    },
+
+    paymentMethod: {
+      type: String,
+      enum: ["UPI", "Card", "Net Banking", "Wallet", "Cash", ""],
       default: "",
     },
   },
@@ -44,7 +60,4 @@ const transactionSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model(
-  "Transaction",
-  transactionSchema
-);
+module.exports = mongoose.model("Transaction", transactionSchema);

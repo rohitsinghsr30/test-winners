@@ -2,11 +2,33 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+// ================= HELPER =================
+
+const generateReferralCode = () => {
+  return (
+    "TW" +
+    Math.random().toString(36).substring(2, 8).toUpperCase()
+  );
+};
+
+const generateToken = (user) => {
+  return jwt.sign(
+    {
+      id: user._id,
+      role: user.role,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
+};
+
 // ================= REGISTER USER =================
 
 const registerUser = async (req, res) => {
   try {
-    const {
+    let {
       fullName,
       mobile,
       email,
@@ -14,26 +36,75 @@ const registerUser = async (req, res) => {
       referredBy,
     } = req.body;
 
-    // Check Existing User
-    const userExists = await User.findOne({
-      $or: [{ email }, { mobile }],
-    });
+    // ===== Basic Validation =====
 
-    if (userExists) {
+    if (!fullName || !mobile || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: "User already exists",
+        message: "All fields are required.",
       });
     }
 
-    // Encrypt Password
+    email = email.trim().toLowerCase();
+    mobile = mobile.trim();
+
+    if (password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password must contain at least 8 characters.",
+      });
+    }
+
+    // ===== Existing User =====
+
+    const existingUser = await User.findOne({
+      $or: [{ email }, { mobile }],
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "User already exists with this email or mobile.",
+      });
+    }
+
+    // ===== Referral Check =====
+
+    if (referredBy) {
+      const referrer = await User.findOne({
+        referralCode: referredBy,
+      });
+
+      if (!referrer) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid referral code.",
+        });
+      }
+    }
+
+    // ===== Password Hash =====
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Generate Referral Code
-    const referralCode =
-      "TW" + Math.random().toString(36).substring(2, 8).toUpperCase();
+    // ===== Unique Referral Code =====
 
-    // Create User
+    let referralCode;
+
+    while (true) {
+      referralCode = generateReferralCode();
+
+      const exists = await User.findOne({
+        referralCode,
+      });
+
+      if (!exists) break;
+    }
+
+    // ===== Create User =====
+
     const user = await User.create({
       fullName,
       mobile,
@@ -41,84 +112,124 @@ const registerUser = async (req, res) => {
       password: hashedPassword,
       referredBy,
       referralCode,
+      wallet: 0,
+      winning: 0,
+      rank: 0,
+      role: "user",
+      isVerified: false,
+      status: "active",
+      testsAttempted: 0,
+      testsWon: 0,
+      totalRewards: 0,
     });
 
-    // Generate JWT
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
-    );
+    // ===== JWT =====
 
-    res.status(201).json({
+    const token = generateToken(user);
+
+    return res.status(201).json({
       success: true,
       message: "Registration Successful",
       token,
-      user,
+
+      user: {
+        _id: user._id,
+        fullName: user.fullName,
+        mobile: user.mobile,
+        email: user.email,
+        wallet: user.wallet,
+        winning: user.winning,
+        referralCode: user.referralCode,
+        role: user.role,
+      },
     });
 
   } catch (error) {
-    console.log(error);
 
-    res.status(500).json({
+    console.error("REGISTER ERROR:", error);
+
+    return res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message,
     });
+
   }
 };
-
 // ================= LOGIN USER =================
 
 const loginUser = async (req, res) => {
   try {
+    let { email, password } = req.body;
 
-    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and Password are required.",
+      });
+    }
+
+    email = email.trim().toLowerCase();
 
     const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: "Invalid Email",
+        message: "Invalid Email or Password.",
       });
     }
 
-    const isMatch = await bcrypt.compare(
-      password,
-      user.password
-    );
+    if (user.status === "blocked") {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been blocked.",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(400).json({
         success: false,
-        message: "Invalid Password",
+        message: "Invalid Email or Password.",
       });
     }
 
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
-    );
+    user.lastLogin = new Date();
+    await user.save();
 
-    res.status(200).json({
+    const token = generateToken(user);
+
+    return res.status(200).json({
       success: true,
       message: "Login Successful",
       token,
-      user,
+
+      user: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        mobile: user.mobile,
+        wallet: user.wallet,
+        winning: user.winning,
+        rank: user.rank,
+        referralCode: user.referralCode,
+        role: user.role,
+        profileImage: user.profileImage,
+        testsAttempted: user.testsAttempted,
+        testsWon: user.testsWon,
+        totalRewards: user.totalRewards,
+        isVerified: user.isVerified,
+      },
     });
 
   } catch (error) {
 
-    console.log(error);
+    console.error("LOGIN ERROR:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message,
     });
 
   }
@@ -134,22 +245,22 @@ const getUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "User not found.",
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       user,
     });
 
   } catch (error) {
 
-    console.log(error);
+    console.error("GET USER ERROR:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message,
     });
 
   }
@@ -160,9 +271,29 @@ const getUser = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
 
-    const { fullName, mobile, profileImage } = req.body;
+    const {
+      fullName,
+      mobile,
+      profileImage,
+    } = req.body;
 
-    const user = await User.findByIdAndUpdate(
+    if (mobile) {
+
+      const existing = await User.findOne({
+        mobile,
+        _id: { $ne: req.user.id },
+      });
+
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message: "Mobile number already in use.",
+        });
+      }
+
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
       {
         fullName,
@@ -175,30 +306,32 @@ const updateProfile = async (req, res) => {
       }
     ).select("-password");
 
-    if (!user) {
+    if (!updatedUser) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "User not found.",
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "Profile Updated Successfully",
-      user,
+      message: "Profile Updated Successfully.",
+      user: updatedUser,
     });
 
   } catch (error) {
 
-    console.log(error);
+    console.error("UPDATE PROFILE ERROR:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message,
     });
 
   }
 };
+
+// ================= EXPORT =================
 
 module.exports = {
   registerUser,

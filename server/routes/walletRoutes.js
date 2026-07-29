@@ -5,15 +5,25 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const {
   getWallet,
-  addMoney,
+  depositMoney,
   withdrawMoney,
+  getTransactions,
+  getWalletSummary,
 } = require("../controllers/walletController");
 
-// Get Wallet Details
+// ================= WALLET =================
+
+// Wallet Balance
 router.get("/", authMiddleware, getWallet);
 
-// Add Money
-router.post("/add", authMiddleware, addMoney);
+// Wallet Summary
+router.get("/summary", authMiddleware, getWalletSummary);
+
+// Transaction History
+router.get("/transactions", authMiddleware, getTransactions);
+
+// Deposit Money
+router.post("/deposit", authMiddleware, depositMoney);
 
 // Withdraw Money
 router.post("/withdraw", authMiddleware, withdrawMoney);
