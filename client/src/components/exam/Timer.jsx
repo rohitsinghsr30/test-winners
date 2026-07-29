@@ -1,27 +1,99 @@
 import { useEffect, useState } from "react";
 
-function Timer({ minutes }) {
-  const [secondsLeft, setSecondsLeft] = useState(minutes * 60);
+function Timer({
+  minutes = 0,
+  onTimeUp,
+  onTimeChange,
+}) {
 
+  const [secondsLeft, setSecondsLeft] = useState(
+    Math.max(0, minutes * 60)
+  );
+
+  // Reset timer when duration changes
   useEffect(() => {
-    const timer = setInterval(() => {
+
+    setSecondsLeft(Math.max(0, minutes * 60));
+
+  }, [minutes]);
+
+  // Countdown
+  useEffect(() => {
+
+    if (secondsLeft <= 0) return;
+
+    const interval = setInterval(() => {
+
       setSecondsLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
+
+        const next = prev - 1;
+
+        if (onTimeChange) {
+          onTimeChange(next > 0 ? next : 0);
         }
-        return prev - 1;
+
+        if (next <= 0) {
+
+          clearInterval(interval);
+
+          if (onTimeUp) {
+            onTimeUp();
+          }
+
+          return 0;
+
+        }
+
+        return next;
+
       });
+
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, []);
+    return () => clearInterval(interval);
 
-  const hrs = String(Math.floor(secondsLeft / 3600)).padStart(2, "0");
-  const mins = String(Math.floor((secondsLeft % 3600) / 60)).padStart(2, "0");
-  const secs = String(secondsLeft % 60).padStart(2, "0");
+  }, [secondsLeft, onTimeUp, onTimeChange]);
 
-  return <>{hrs} : {mins} : {secs}</>;
+  // Time Format
+  const hours = String(
+    Math.floor(secondsLeft / 3600)
+  ).padStart(2, "0");
+
+  const mins = String(
+    Math.floor((secondsLeft % 3600) / 60)
+  ).padStart(2, "0");
+
+  const secs = String(
+    secondsLeft % 60
+  ).padStart(2, "0");
+
+  // Timer Color
+  let timerColor = "#198754";
+
+  if (secondsLeft <= 300) {
+    timerColor = "#ff9800";
+  }
+
+  if (secondsLeft <= 60) {
+    timerColor = "#dc3545";
+  }
+
+  return (
+
+    <div
+      className="timerBox"
+      style={{
+        color: timerColor,
+        fontWeight: "700",
+        fontSize: "30px",
+        letterSpacing: "2px",
+      }}
+    >
+      {hours}:{mins}:{secs}
+    </div>
+
+  );
+
 }
 
 export default Timer;

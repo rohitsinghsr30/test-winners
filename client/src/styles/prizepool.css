@@ -1,79 +1,66 @@
 .prizePool{
-padding:90px 20px;
-background:#eef5ff;
-text-align:center;
+    padding:80px 20px;
+    background:linear-gradient(135deg,#004aad,#1d4ed8);
+    color:#fff;
+    text-align:center;
 }
 
 .prizePool h2{
-font-size:42px;
-margin-bottom:50px;
-color:#003366;
+    font-size:42px;
+    margin-bottom:40px;
 }
 
-.poolCards{
-
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:25px;
-
-max-width:1200px;
-
-margin:auto;
-
+.prizeCard{
+    max-width:700px;
+    margin:auto;
+    background:#ffffff;
+    color:#081c3a;
+    border-radius:20px;
+    padding:50px 40px;
+    box-shadow:0 20px 50px rgba(0,0,0,.15);
 }
 
-.poolCard{
-
-background:white;
-
-padding:35px;
-
-border-radius:20px;
-
-box-shadow:0 10px 25px rgba(0,0,0,.08);
-
-transition:.3s;
-
+.prizeCard h1{
+    font-size:64px;
+    color:#004aad;
+    margin-bottom:20px;
 }
 
-.poolCard:hover{
-
-transform:translateY(-8px);
-
+.prizeCard p{
+    font-size:18px;
+    line-height:1.8;
+    color:#555;
+    margin-bottom:30px;
 }
 
-.poolCard h3{
-
-margin-bottom:20px;
-
-color:#666;
-
+.joinBtn{
+    background:#004aad;
+    color:#fff;
+    border:none;
+    padding:16px 36px;
+    border-radius:12px;
+    font-size:18px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
 }
 
-.poolCard h1{
-
-color:#004aad;
-
-font-size:38px;
-
+.joinBtn:hover{
+    background:#00388a;
+    transform:translateY(-3px);
 }
 
-@media(max-width:900px){
+@media(max-width:768px){
 
-.poolCards{
+    .prizePool h2{
+        font-size:32px;
+    }
 
-grid-template-columns:repeat(2,1fr);
+    .prizeCard{
+        padding:35px 25px;
+    }
 
-}
-
-}
-
-@media(max-width:600px){
-
-.poolCards{
-
-grid-template-columns:1fr;
-
-}
-
+    .prizeCard h1{
+        font-size:46px;
+    }
 }

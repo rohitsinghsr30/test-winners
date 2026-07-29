@@ -1,0 +1,73 @@
+.button {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* ===========================
+   Variants
+=========================== */
+
+.primary {
+  background: var(--primary);
+  color: white;
+}
+
+.primary:hover {
+  background: var(--primary-dark);
+}
+
+.secondary {
+  background: var(--secondary);
+  color: white;
+}
+
+.secondary:hover {
+  opacity: 0.9;
+}
+
+.outline {
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.outline:hover {
+  background: var(--primary);
+  color: white;
+}
+
+/* ===========================
+   Sizes
+=========================== */
+
+.small {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.medium {
+  padding: 12px 24px;
+  font-size: 16px;
+}
+
+.large {
+  padding: 16px 32px;
+  font-size: 18px;
+}
+
+/* ===========================
+   Disabled
+=========================== */
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

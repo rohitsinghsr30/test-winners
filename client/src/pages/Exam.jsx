@@ -1,168 +1,332 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import axios from "axios";
+import { useParams, useNavigate } from "react-router-dom";
 
 import "../styles/exam.css";
 
 import ExamHeader from "../components/exam/ExamHeader";
-import Timer from "../components/exam/Timer";
 import QuestionCard from "../components/exam/QuestionCard";
 import QuestionPalette from "../components/exam/QuestionPalette";
 import Navigation from "../components/exam/Navigation";
+import Timer from "../components/exam/Timer";
+import SubmitModal from "../components/exam/SubmitModal";
+
+import useExam from "../hooks/useExam";
+import useExamApi from "../hooks/useExamApi";
+import useExamSubmit from "../hooks/useExamSubmit";
 
 function Exam() {
+
   const { id } = useParams();
 
-  const [test, setTest] = useState(null);
-  const [questions, setQuestions] = useState([]);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    loadExam();
-  }, []);
+  const {
 
-  const loadExam = async () => {
-    try {
-      setLoading(true);
+    currentQuestion,
 
-      const token = localStorage.getItem("token");
+    answers,
 
-      if (!token) {
-        alert("Please login first.");
-        return;
-      }
+    visitedQuestions,
 
-      console.log("Loading Exam ID :", id);
-      console.log("API :", `${import.meta.env.VITE_API_URL}/api/tests/${id}`);
+    markedReview,
 
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/tests/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+    language,
 
-      console.log("Exam Response :", response.data);
+    showSubmitModal,
 
-      if (response.data.success) {
-        setTest(response.data.test);
-        setQuestions(response.data.questions || []);
-      } else {
-        alert(response.data.message);
-      }
-    } catch (error) {
-      console.log("=========== EXAM ERROR ===========");
+    setShowSubmitModal,
 
-      if (error.response) {
-        console.log("Status :", error.response.status);
-        console.log("Data :", error.response.data);
-        alert(error.response.data.message || "Unable to load exam.");
-      } else if (error.request) {
-        console.log("Request :", error.request);
-        alert("Server is not responding.");
-      } else {
-        console.log("Message :", error.message);
-        alert(error.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+    setLanguage,
 
-  const handleSelectAnswer = (optionIndex) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [currentQuestion]: optionIndex,
-    }));
-  };
+    selectAnswer,
 
-  const nextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-    }
-  };
+    clearResponse,
 
-  const previousQuestion = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion((prev) => prev - 1);
-    }
-  };
+    markForReview,
 
-  const jumpToQuestion = (index) => {
-    setCurrentQuestion(index);
-  };
+    nextQuestion,
 
-  const submitExam = () => {
-    console.log("Answers :", answers);
-    alert("Submit API will be connected next.");
-  };
+    previousQuestion,
+
+    jumpQuestion,
+
+  } = useExam();
+
+  const {
+
+    loading,
+
+    test,
+
+    questions,
+
+    candidate,
+
+  } = useExamApi(id, navigate);
+
+  const {
+
+    submitExam,
+
+  } = useExamSubmit();
 
   if (loading) {
+
     return (
-      <div style={{ textAlign: "center", marginTop: "100px" }}>
-        <h2>Loading Exam...</h2>
+
+      <div className="examPage">
+
+        <h2
+          style={{
+            textAlign: "center",
+            marginTop: "100px",
+          }}
+        >
+          Loading Exam...
+        </h2>
+
       </div>
+
     );
+
   }
 
   if (!test) {
+
     return (
-      <div style={{ textAlign: "center", marginTop: "100px" }}>
-        <h2>Test Not Found</h2>
+
+      <div className="examPage">
+
+        <h2
+          style={{
+            textAlign: "center",
+            marginTop: "100px",
+          }}
+        >
+          Test Not Found
+        </h2>
+
       </div>
+
     );
+
   }
 
-  if (questions.length === 0) {
-    return (
-      <div style={{ textAlign: "center", marginTop: "100px" }}>
-        <h2>No Questions Available</h2>
-      </div>
-    );
-  }
+  const question = questions[currentQuestion] || null;
 
-  const question = questions[currentQuestion];
+  const answered =
+    questions.filter(
+      (q) => answers[q._id] !== undefined
+    ).length;
+
+  const remaining =
+    questions.length - answered;
+
+    if (!question) {
 
   return (
+
     <div className="examPage">
+
+      <h2
+        style={{
+          textAlign: "center",
+          marginTop: "100px",
+        }}
+      >
+        No Questions Found
+      </h2>
+
+    </div>
+
+  );
+
+}
+  return (
+
+    <div className="examPage">
+
       <ExamHeader
+
         title={test.title}
+
         subject={test.subject}
-        time={<Timer minutes={test.duration} />}
+
+        contestType={test.contestType || "Mega Challenge"}
+
+        totalQuestions={questions.length}
+
+        candidateName={candidate.fullName}
+
+        rollNumber={candidate.rollNumber}
+
+        language={language}
+
+        setLanguage={setLanguage}
+
+        time={
+
+          <Timer
+
+            minutes={test.duration}
+
+            onTimeUp={() =>
+
+              submitExam(
+
+                id,
+
+                questions,
+
+                answers,
+
+                navigate,
+
+                test
+
+              )
+
+            }
+
+          />
+
+        }
+
       />
 
       <div className="examBody">
-        <div style={{ flex: 3 }}>
+
+        <div className="leftPanel">
+
+         
+
           <QuestionCard
+
             question={question}
+
             currentQuestion={currentQuestion}
+
             totalQuestions={questions.length}
-            selectedAnswer={answers[currentQuestion]}
-            onSelectAnswer={handleSelectAnswer}
+
+            selectedAnswer={
+
+              answers[question?._id]
+
+            }
+
+            onSelectAnswer={(option) => {
+
+  if (!question) return;
+
+  selectAnswer(question._id, option);
+
+}}
+
+            language={language}
+
+          />
+                    <Navigation
+
+            currentQuestion={currentQuestion}
+
+            totalQuestions={questions.length}
+
+            previous={() =>
+               previousQuestion(question._id)
+}
+
+            next={() =>
+             nextQuestion(
+              questions.length,
+              question._id
+  )
+            }
+
+            clearResponse={() => {
+
+   if(!question) return;
+
+   clearResponse(question._id);
+
+}}
+
+markForReview={() => {
+
+  if (!question) return;
+
+  markForReview(question._id);
+
+}}
           />
 
-          <Navigation
-            currentQuestion={currentQuestion}
-            totalQuestions={questions.length}
-            previous={previousQuestion}
-            next={nextQuestion}
-          />
         </div>
 
         <QuestionPalette
+
           questions={questions}
+
           currentQuestion={currentQuestion}
+
           answers={answers}
-          changeQuestion={jumpToQuestion}
-          submitExam={submitExam}
+
+          visitedQuestions={visitedQuestions}
+
+          markedReview={markedReview}
+
+          changeQuestion={(index) =>
+            jumpQuestion(index, questions[index]._id)
+}
+
+          submitExam={() =>
+            setShowSubmitModal(true)
+          }
+
+          submitting={false}
+
         />
+
       </div>
-    </div>
+
+      <SubmitModal
+
+        open={showSubmitModal}
+
+        totalQuestions={questions.length}
+
+        answered={answered}
+
+        review={markedReview.length}
+
+        remaining={remaining}
+
+        submitting={false}
+
+        onCancel={() =>
+          setShowSubmitModal(false)
+        }
+
+        onSubmit={() =>
+
+          submitExam(
+
+            id,
+
+            questions,
+
+            answers,
+
+            navigate,
+
+            test
+
+          )
+
+        }
+
+      />
+          </div>
+
   );
+
 }
 
 export default Exam;

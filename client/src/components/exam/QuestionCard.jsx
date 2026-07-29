@@ -4,25 +4,60 @@ function QuestionCard({
   totalQuestions,
   selectedAnswer,
   onSelectAnswer,
+  language,
 }) {
+
+  if (!question) {
+    return null;
+  }
+
+  const questionText =
+    language === "hindi"
+      ? question.questionHindi || question.question
+      : question.questionEnglish || question.question;
+
+  const options =
+    language === "hindi"
+      ? question.optionsHindi || question.options
+      : question.optionsEnglish || question.options;
+
   return (
+
     <div className="questionSection">
 
-      <h3>
-        Question {currentQuestion + 1} of {totalQuestions}
-      </h3>
+      <div className="questionHeader">
+
+        <h3>
+          Question {currentQuestion + 1} / {totalQuestions}
+        </h3>
+
+        {question.difficulty && (
+          <span className="difficultyBadge">
+            {question.difficulty}
+          </span>
+        )}
+
+      </div>
 
       <hr />
 
-      <h2>{question.question}</h2>
+      <div className="questionText">
+
+        {questionText}
+
+      </div>
 
       <div className="options">
 
-        {question.options.map((option, index) => (
+        {options.map((option, index) => (
 
           <label
             key={index}
-            className="option"
+            className={
+              selectedAnswer === index
+                ? "option activeOption"
+                : "option"
+            }
           >
 
             <input
@@ -32,7 +67,7 @@ function QuestionCard({
               onChange={() => onSelectAnswer(index)}
             />
 
-            {option}
+            <span>{option}</span>
 
           </label>
 
@@ -41,7 +76,9 @@ function QuestionCard({
       </div>
 
     </div>
+
   );
+
 }
 
 export default QuestionCard;

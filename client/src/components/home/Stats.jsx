@@ -1,4 +1,4 @@
-import "../styles/stats.css";
+import "../../styles/stats.css";
 
 function Stats() {
   const stats = [

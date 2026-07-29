@@ -34,27 +34,39 @@ function Wallet() {
       setWallet(res.data.wallet || 0);
       setWinning(res.data.winning || 0);
       setTransactions(res.data.transactions || []);
+
     } catch (error) {
+
       console.error(error);
 
       if (error.response?.status === 401) {
         localStorage.removeItem("token");
         window.location.href = "/login";
       }
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
-  const addMoney = async () => {
+  // ================= Deposit Money =================
+
+  const depositMoney = async () => {
+
     if (!amount || Number(amount) <= 0) {
       return alert("Please enter a valid amount.");
     }
 
     try {
+
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/wallet/add`,
-        { amount: Number(amount) },
+        `${import.meta.env.VITE_API_URL}/api/wallet/deposit`,
+        {
+          amount: Number(amount),
+          paymentMethod: "UPI",
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -63,22 +75,36 @@ function Wallet() {
       );
 
       alert(res.data.message);
+
       setAmount("");
+
       fetchWallet();
+
     } catch (error) {
-      alert(error.response?.data?.message || "Failed to add money.");
+
+      alert(
+        error.response?.data?.message ||
+        "Failed to deposit money."
+      );
+
     }
   };
+
+  // ================= Withdraw =================
 
   const withdrawMoney = async () => {
+
     if (!amount || Number(amount) <= 0) {
       return alert("Please enter a valid amount.");
     }
 
     try {
+
       const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/wallet/withdraw`,
-        { amount: Number(amount) },
+        {
+          amount: Number(amount),
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -87,23 +113,34 @@ function Wallet() {
       );
 
       alert(res.data.message);
+
       setAmount("");
+
       fetchWallet();
+
     } catch (error) {
-      alert(error.response?.data?.message || "Withdrawal failed.");
+
+      alert(
+        error.response?.data?.message ||
+        "Withdrawal failed."
+      );
+
     }
   };
 
   if (loading) {
     return (
       <div className="walletPage">
-        <h2 style={{ textAlign: "center" }}>Loading Wallet...</h2>
+        <h2 style={{ textAlign: "center" }}>
+          Loading Wallet...
+        </h2>
       </div>
     );
   }
 
   return (
     <div className="walletPage">
+
       <div className="walletCard">
 
         <h2>💰 My Wallet</h2>
@@ -120,13 +157,15 @@ function Wallet() {
         />
 
         <div className="walletButtons">
-          <button onClick={addMoney}>
-            Add Money
+
+          <button onClick={depositMoney}>
+            Deposit Money
           </button>
 
           <button onClick={withdrawMoney}>
             Withdraw
           </button>
+
         </div>
 
         <hr />
@@ -137,15 +176,23 @@ function Wallet() {
           <p>No Transactions Found.</p>
         ) : (
           transactions.map((item) => (
-            <div className="transaction" key={item._id}>
-              <p><strong>{item.type.toUpperCase()}</strong></p>
+            <div
+              className="transaction"
+              key={item._id}
+            >
+              <p>
+                <strong>{item.type}</strong>
+              </p>
+
               <p>₹{item.amount}</p>
+
               <p>{item.status}</p>
             </div>
           ))
         )}
 
       </div>
+
     </div>
   );
 }

@@ -1,0 +1,55 @@
+.liveContest{
+    padding:70px 20px;
+    background:#eef5ff;
+}
+
+.contestCard{
+    max-width:1200px;
+    margin:auto;
+    background:#004aad;
+    color:#fff;
+    padding:40px;
+    border-radius:20px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:30px;
+}
+
+.contestStats{
+    display:flex;
+    gap:50px;
+}
+
+.contestStats h3{
+    font-size:34px;
+}
+
+.contestStats span{
+    color:#d9e6ff;
+}
+
+.contestCard button{
+    padding:15px 35px;
+    background:#fff;
+    color:#004aad;
+    border:none;
+    border-radius:12px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+@media(max-width:900px){
+
+.contestCard{
+flex-direction:column;
+text-align:center;
+}
+
+.contestStats{
+flex-direction:column;
+gap:20px;
+}
+
+}

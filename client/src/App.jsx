@@ -19,42 +19,73 @@ function App() {
   return (
     <Routes>
 
-      {/* ================= PUBLIC ROUTES ================= */}
+      {/* ================= ALL NORMAL PAGES ================= */}
 
       <Route element={<MainLayout />}>
+
         <Route path="/" element={<Home />} />
+
         <Route path="/login" element={<Login />} />
+
         <Route path="/signup" element={<Signup />} />
+
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/test"
+          element={
+            <ProtectedRoute>
+              <Test />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/test/:id"
+          element={
+            <ProtectedRoute>
+              <TestDetails />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/wallet"
+          element={
+            <ProtectedRoute>
+              <Wallet />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/result"
+          element={
+            <ProtectedRoute>
+              <Result />
+            </ProtectedRoute>
+          }
+        />
+
       </Route>
 
-      {/* ================= PROTECTED ROUTES ================= */}
-
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/test"
-        element={
-          <ProtectedRoute>
-            <Test />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/test/:id"
-        element={
-          <ProtectedRoute>
-            <TestDetails />
-          </ProtectedRoute>
-        }
-      />
+      {/* ================= CBT EXAM PAGE ================= */}
 
       <Route
         path="/exam/:id"
@@ -65,34 +96,7 @@ function App() {
         }
       />
 
-      <Route
-        path="/wallet"
-        element={
-          <ProtectedRoute>
-            <Wallet />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/result"
-        element={
-          <ProtectedRoute>
-            <Result />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* ================= 404 PAGE ================= */}
+      {/* ================= 404 ================= */}
 
       <Route path="*" element={<Navigate to="/" replace />} />
 
