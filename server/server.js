@@ -6,8 +6,26 @@ const compression = require("compression");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const hpp = require("hpp");
+const dns = require("dns");
 
 dotenv.config();
+
+// ======================================================
+// DNS FIX FOR MONGODB ATLAS SRV
+// ======================================================
+
+console.log("========================================");
+console.log("DNS CONFIGURATION");
+console.log("========================================");
+console.log("DNS Before :", dns.getServers());
+
+dns.setServers([
+    "8.8.8.8",
+    "8.8.4.4"
+]);
+
+console.log("DNS After  :", dns.getServers());
+console.log("========================================");
 
 const connectDB = require("./config/db");
 
@@ -132,11 +150,11 @@ app.get("/", (req, res) => {
 
         application: "TEST WINNERS",
 
-        version: "2.1.0",
+        version: "2.2.0",
 
         environment: process.env.NODE_ENV || "development",
 
-        message: "🚀 TEST WINNERS Backend Running Successfully"
+        message: "TEST WINNERS Backend Running Successfully"
 
     });
 
@@ -158,7 +176,9 @@ app.get("/api/health", (req, res) => {
 
         timestamp: new Date(),
 
-        memory: process.memoryUsage()
+        memory: process.memoryUsage(),
+
+        dns: dns.getServers()
 
     });
 
@@ -168,34 +188,24 @@ app.get("/api/health", (req, res) => {
 // API ROUTES
 // ======================================================
 
-// Authentication
 app.use("/api/auth", authRoutes);
 
-// Wallet
 app.use("/api/wallet", walletRoutes);
 
-// Payments
 app.use("/api/payments", paymentRoutes);
 
-// Withdrawals
 app.use("/api/withdrawals", withdrawalRoutes);
 
-// Tests
 app.use("/api/tests", testRoutes);
 
-// Questions
 app.use("/api/questions", questionRoutes);
 
-// Results
 app.use("/api/results", resultRoutes);
 
-// Leaderboard
 app.use("/api/leaderboard", leaderboardRoutes);
 
-// Admin
 app.use("/api/admin", adminRoutes);
 
-// Admin Dashboard
 app.use("/api/admin", adminDashboardRoutes);
 
 // ======================================================
@@ -217,7 +227,7 @@ app.use((req, res) => {
 });
 
 // ======================================================
-// ERROR HANDLER
+// GLOBAL ERROR HANDLER
 // ======================================================
 
 app.use((err, req, res, next) => {
@@ -244,7 +254,7 @@ app.use((err, req, res, next) => {
 });
 
 // ======================================================
-// SERVER
+// SERVER START
 // ======================================================
 
 const PORT = process.env.PORT || 5000;
@@ -253,33 +263,44 @@ const startServer = async () => {
 
     try {
 
+        console.log("");
+        console.log("Connecting to MongoDB Atlas...");
+
         await connectDB();
+
 
         AutomaticExamEngine();
 
         app.listen(PORT, () => {
 
             console.log("");
-            console.log("==================================================");
-            console.log("🚀 TEST WINNERS Backend Started Successfully");
-            console.log("==================================================");
-            console.log(`🌍 Environment : ${process.env.NODE_ENV || "development"}`);
-            console.log(`🌐 Server      : http://localhost:${PORT}`);
-            console.log(`📡 API Base    : http://localhost:${PORT}/api`);
-            console.log(`❤️ Health      : http://localhost:${PORT}/api/health`);
-            console.log("🤖 Automatic Exam Engine : Running");
-            console.log("🛡️ Security    : Helmet + HPP + Rate Limit");
-            console.log("🗜️ Compression : Enabled");
-            console.log("==================================================");
+            console.log("======================================================");
+            console.log("TEST WINNERS Backend Started Successfully");
+            console.log("======================================================");
+            console.log(`Environment          : ${process.env.NODE_ENV || "development"}`);
+            console.log(`Server URL           : http://localhost:${PORT}`);
+            console.log(`API Base             : http://localhost:${PORT}/api`);
+            console.log(`Health API           : http://localhost:${PORT}/api/health`);
+            console.log(`MongoDB              : Connected`);
+            console.log(`DNS Servers          : ${dns.getServers().join(", ")}`);
+            console.log("Automatic Exam Engine: Running");
+            console.log("Helmet               : Enabled");
+            console.log("Compression          : Enabled");
+            console.log("HPP                  : Enabled");
+            console.log("Rate Limiter         : Enabled");
+            console.log("======================================================");
+            console.log("");
 
         });
 
     } catch (error) {
 
-        console.error("==================================================");
-        console.error("❌ SERVER START FAILED");
-        console.error("==================================================");
+        console.error("");
+        console.error("======================================================");
+        console.error("SERVER START FAILED");
+        console.error("======================================================");
         console.error(error);
+        console.error("======================================================");
 
         process.exit(1);
 
