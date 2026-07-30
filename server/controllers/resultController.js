@@ -1,6 +1,6 @@
 const Result = require("../models/Result");
 const Test = require("../models/Test");
-const User = require("../models/User");
+const User = require("../models/user");
 
 /*
 |--------------------------------------------------------------------------

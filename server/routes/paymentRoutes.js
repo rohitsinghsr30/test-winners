@@ -6,21 +6,15 @@ const authMiddleware = require("../middleware/authMiddleware");
 const adminMiddleware = require("../middleware/adminMiddleware");
 
 const {
-
     createOrder,
-
     verifyPayment,
-
     getPaymentHistory,
-
     getAllPayments,
-
     getPaymentStatistics,
-
+    getPaymentById,
     markPaymentFailed,
-
-    refundPayment
-
+    refundPayment,
+    deletePayment
 } = require("../controllers/paymentController");
 
 /*
@@ -29,21 +23,21 @@ const {
 |--------------------------------------------------------------------------
 */
 
-// Create Payment Order
+// Create Razorpay Order
 router.post(
     "/create-order",
     authMiddleware,
     createOrder
 );
 
-// Verify Payment
+// Verify Razorpay Payment
 router.post(
     "/verify",
     authMiddleware,
     verifyPayment
 );
 
-// Payment History
+// Logged-in User Payment History
 router.get(
     "/history",
     authMiddleware,
@@ -72,6 +66,14 @@ router.get(
     getAllPayments
 );
 
+// Get Single Payment Details
+router.get(
+    "/:id",
+    authMiddleware,
+    adminMiddleware,
+    getPaymentById
+);
+
 // Mark Payment Failed
 router.put(
     "/:id/fail",
@@ -86,6 +88,14 @@ router.post(
     authMiddleware,
     adminMiddleware,
     refundPayment
+);
+
+// Delete Payment
+router.delete(
+    "/:id",
+    authMiddleware,
+    adminMiddleware,
+    deletePayment
 );
 
 module.exports = router;

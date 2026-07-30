@@ -11,7 +11,7 @@ const dns = require("dns");
 dotenv.config();
 
 // ======================================================
-// DNS FIX FOR MONGODB ATLAS SRV
+// DNS CONFIGURATION
 // ======================================================
 
 console.log("========================================");
@@ -30,7 +30,7 @@ console.log("========================================");
 const connectDB = require("./config/db");
 
 // ======================================================
-// IMPORT ROUTES
+// ROUTES
 // ======================================================
 
 const authRoutes = require("./routes/authRoutes");
@@ -45,12 +45,20 @@ const leaderboardRoutes = require("./routes/leaderboardRoutes");
 const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
 
 // ======================================================
-// IMPORT SERVICES
+// SERVICES
 // ======================================================
 
 const AutomaticExamEngine = require("./services/AutomaticExamEngine");
 
+// ======================================================
+// EXPRESS
+// ======================================================
+
 const app = express();
+
+// Required when deployed behind Render/Nginx/Cloudflare
+
+app.set("trust proxy", 1);
 
 // ======================================================
 // SECURITY
@@ -79,11 +87,8 @@ const limiter = rateLimit({
     legacyHeaders: false,
 
     message: {
-
         success: false,
-
         message: "Too many requests. Please try again later."
-
     }
 
 });
@@ -94,37 +99,68 @@ app.use(limiter);
 // CORS
 // ======================================================
 
-app.use(cors({
+app.use(
 
-    origin: process.env.CLIENT_URL || "*",
+    cors({
 
-    credentials: true
+        origin: process.env.CLIENT_URL
+            ? process.env.CLIENT_URL.split(",")
+            : ["http://localhost:5173"],
 
-}));
+        credentials: true,
+
+        methods: [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+        ],
+
+        allowedHeaders: [
+            "Content-Type",
+            "Authorization"
+        ]
+
+    })
+
+);
 
 // ======================================================
 // BODY PARSER
 // ======================================================
 
-app.use(express.json({
+app.use(
 
-    limit: "20mb"
+    express.json({
 
-}));
+        limit: "2mb"
 
-app.use(express.urlencoded({
+    })
 
-    extended: true,
+);
 
-    limit: "20mb"
+app.use(
 
-}));
+    express.urlencoded({
+
+        extended: true,
+
+        limit: "2mb"
+
+    })
+
+);
 
 // ======================================================
 // LOGGER
 // ======================================================
 
-app.use(morgan("dev"));
+if (process.env.NODE_ENV !== "production") {
+
+    app.use(morgan("dev"));
+
+}
 
 app.use((req, res, next) => {
 
@@ -150,7 +186,7 @@ app.get("/", (req, res) => {
 
         application: "TEST WINNERS",
 
-        version: "2.2.0",
+        version: "2.3.0",
 
         environment: process.env.NODE_ENV || "development",
 
@@ -161,7 +197,7 @@ app.get("/", (req, res) => {
 });
 
 // ======================================================
-// HEALTH
+// HEALTH CHECK
 // ======================================================
 
 app.get("/api/health", (req, res) => {
@@ -209,12 +245,12 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/admin", adminDashboardRoutes);
 
 // ======================================================
-// 404
+// 404 HANDLER
 // ======================================================
 
 app.use((req, res) => {
 
-    res.status(404).json({
+    return res.status(404).json({
 
         success: false,
 
@@ -237,16 +273,14 @@ app.use((err, req, res, next) => {
     console.error("========================================");
     console.error(err);
 
-    res.status(err.status || 500).json({
+    return res.status(err.status || 500).json({
 
         success: false,
 
         message: err.message || "Internal Server Error",
 
         ...(process.env.NODE_ENV !== "production" && {
-
             stack: err.stack
-
         })
 
     });
@@ -268,7 +302,7 @@ const startServer = async () => {
 
         await connectDB();
 
-
+        // Start Background Services
         AutomaticExamEngine();
 
         app.listen(PORT, () => {
@@ -283,6 +317,7 @@ const startServer = async () => {
             console.log(`Health API           : http://localhost:${PORT}/api/health`);
             console.log(`MongoDB              : Connected`);
             console.log(`DNS Servers          : ${dns.getServers().join(", ")}`);
+            console.log(`Client URL           : ${process.env.CLIENT_URL}`);
             console.log("Automatic Exam Engine: Running");
             console.log("Helmet               : Enabled");
             console.log("Compression          : Enabled");

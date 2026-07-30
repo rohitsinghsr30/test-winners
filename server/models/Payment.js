@@ -10,6 +10,7 @@ const paymentSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true,
+        index: true,
     },
 
     // ======================================================
@@ -24,6 +25,7 @@ const paymentSchema = new mongoose.Schema(
 
     currency: {
         type: String,
+        enum: ["INR"],
         default: "INR",
     },
 
@@ -56,12 +58,16 @@ const paymentSchema = new mongoose.Schema(
 
     orderId: {
         type: String,
-        default: "",
+        unique: true,
+        sparse: true,
+        trim: true,
     },
 
     paymentId: {
         type: String,
-        default: "",
+        unique: true,
+        sparse: true,
+        trim: true,
     },
 
     signature: {
@@ -71,7 +77,9 @@ const paymentSchema = new mongoose.Schema(
 
     transactionId: {
         type: String,
-        default: "",
+        unique: true,
+        sparse: true,
+        trim: true,
     },
 
     // ======================================================
@@ -88,11 +96,13 @@ const paymentSchema = new mongoose.Schema(
             "Refunded"
         ],
         default: "Created",
+        index: true,
     },
 
     failureReason: {
         type: String,
         default: "",
+        trim: true,
     },
 
     // ======================================================
@@ -112,13 +122,55 @@ const paymentSchema = new mongoose.Schema(
     remarks: {
         type: String,
         default: "",
+        trim: true,
+    },
+
+    // ======================================================
+    // AUDIT
+    // ======================================================
+
+    verifiedAt: {
+        type: Date,
+        default: null,
+    },
+
+    refundedAt: {
+        type: Date,
+        default: null,
+    },
+
+    gatewayResponse: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {},
+    },
+
+    refundDetails: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {},
+    },
+
+    isDeleted: {
+        type: Boolean,
+        default: false,
+        index: true,
     }
 
 },
 {
     timestamps: true,
+    versionKey: false,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 }
 );
+
+// ======================================================
+// INDEXES
+// ======================================================
+
+paymentSchema.index({ user: 1, createdAt: -1 });
+paymentSchema.index({ status: 1, createdAt: -1 });
+paymentSchema.index({ gateway: 1 });
 
 module.exports =
     mongoose.models.Payment ||
